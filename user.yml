@@ -1,0 +1,44 @@
+---
+
+- hosts: synechron
+
+  vars:
+     user: "{{ demo }}"
+ 
+  tasks:
+    - name: creating user
+      user: name="{{ user }}" state=present
+
+    - name: creating another user
+      user:
+        name: badal2
+        state: present
+
+    - name: creating group for next task
+      group: name=synechron state=present
+
+    - name: creating one more user
+      user: name=user3 group=synechron state=present
+
+    - name: Installing NTP
+      yum: name=ntp state=present
+
+    - name: NTP service check
+      service: name=ntpd state=started enabled=true
+
+    - name: File Creation
+      file: path=/var/tmp/badalm mode=777 state=touch
+
+    - name: Directory Creation
+      file: path=/var/tmp/badalma mode=0744 state=directory
+
+    - name: NTP file config
+      #file: path=/etc/badal/ntp.conf state=file
+      copy: src=ntp.conf dest=/etc/ntp.conf
+      notify: 
+        - restart ntp
+
+  handlers:
+
+    - name: restart ntp
+      service: name=ntpd state=restarted
